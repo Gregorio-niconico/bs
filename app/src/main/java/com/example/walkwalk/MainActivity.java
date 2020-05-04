@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         //设置标题栏的按钮效果
         if(actionBar!=null){
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(R.mipmap.center);
+            actionBar.setHomeAsUpIndicator(R.mipmap.menu);
         }
         //获取侧边栏实体
         NavigationView cenavView=(NavigationView)findViewById(R.id.nav_ceview);
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.nav_myinfo:
                 break;
-            case R.id.nav_collection:
+            case R.id.nav_analyze:
                 break;
             default:
         }
