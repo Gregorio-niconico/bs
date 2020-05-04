@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/tab_sport"
+        android:icon="@mipmap/tab_walk_selector"
+        android:title="@string/title_sport" />
+
+    <item
+        android:id="@+id/tab_analyze"
+        android:icon="@mipmap/tab_analyze_selector"
+        android:title="@string/title_analyze" />
+
+    <item
+        android:id="@+id/tab_my"
+        android:icon="@mipmap/tab_man_selector"
+        android:title="@string/title_myinfo" />
+
+</menu>
