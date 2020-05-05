@@ -30,8 +30,8 @@
             <com.example.walkwalk.view.StepArcView
                 android:id="@+id/cc"
                 android:layout_marginTop="20dp"
-                android:layout_width="180dp"
-                android:layout_height="180dp">
+                android:layout_width="140dp"
+                android:layout_height="140dp">
             </com.example.walkwalk.view.StepArcView>
         </LinearLayout>
         <LinearLayout
@@ -44,7 +44,7 @@
                 android:orientation="horizontal">
                 <TextView
                     android:id="@+id/tv_data"
-                    android:layout_width="100dp"
+                    android:layout_width="70dp"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="40dp"
                     android:drawableTop="@mipmap/walk"
@@ -75,18 +75,102 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:orientation="vertical">
-            <TextView
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="40dp"
+                    android:drawableLeft="@mipmap/target"
+                    android:drawablePadding="10dp"
+                    android:gravity="center_vertical"
+                    android:text="目标步数（步）："
+                    android:textSize="@dimen/text_target_hint"
+                    android:textColor="#333333" />
+                <TextView
+                    android:id="@+id/tv_target_step"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="@dimen/text_target"
+                    />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="40dp"
+                    android:drawableLeft="@mipmap/target"
+                    android:drawablePadding="10dp"
+                    android:gravity="center_vertical"
+                    android:text="目标步频（步/分钟）："
+                    android:textSize="@dimen/text_target_hint"
+                    android:textColor="#333333" />
+                <TextView
+                    android:id="@+id/tv_target_v"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="@dimen/text_target"
+                    />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="40dp"
+                    android:drawableLeft="@mipmap/target"
+                    android:drawablePadding="10dp"
+                    android:gravity="center_vertical"
+                    android:text="目标时间（分钟）："
+                    android:textSize="@dimen/text_target_hint"
+                    android:textColor="#333333" />
+                <TextView
+                    android:id="@+id/tv_target_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="30"
+                    android:textSize="@dimen/text_target"
+                    />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:gravity="center_horizontal">
+            <Button
+                android:id="@+id/bt_start_sport"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="70dp"
-                android:drawableLeft="@mipmap/time"
-                android:drawablePadding="10dp"
-                android:gravity="center_horizontal"
-                android:text="3000"
-                android:textSize="25dp"
-                android:textColor="#333333" />
-
+                android:background="@drawable/btn_selector"
+                android:text="@string/start_sport"/>
+            <Button
+                android:id="@+id/bt_stop_sport"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:background="@drawable/btn_selector"
+                android:text="@string/stop_sport"/>
         </LinearLayout>
     </LinearLayout>
 
