@@ -12,26 +12,49 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.walkwalk.view.StepArcView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private DrawerLayout mDrawerLayout;
     private static String TAG="主页面";
     private String user_name,user_pwd,user_sex,user_age;
     private int user_id;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    private StepArcView cc;
+    private Button btn_start,btn_stop;
+    private TextView tv_v,tv_time,tv_target_count,tv_target_v;
+    /**
+     * 注册组件
+     */
+    private void signView(){
+        cc = (StepArcView)findViewById(R.id.cc);
+        btn_start = (Button)findViewById(R.id.bt_start_sport);
+        btn_stop = (Button)findViewById(R.id.bt_stop_sport);
+        tv_v = (TextView)findViewById(R.id.tv_data);
+        tv_time = (TextView)findViewById(R.id.tv_time);
+        tv_target_count = (TextView)findViewById(R.id.tv_target_step);
+        btn_start.setOnClickListener(this);
+        btn_stop.setOnClickListener(this);
+    }
+    /**
+     * 获取用户数据
+     */
+    private void getData(){
         Intent intent=getIntent();
         user_name=intent.getStringExtra("UserName");
         user_age=intent.getStringExtra("UserAge");
         user_pwd=intent.getStringExtra("UserPwd");
         user_sex=intent.getStringExtra("UserSex");
-        setContentView(R.layout.activity_main);
+    }
+    /**
+     *加载Toolbar
+     */
+    private void loadToolbar(){
         //加载toolbar
         Toolbar toolbar=(Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -42,6 +65,12 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.mipmap.menu);
         }
+    }
+
+    /**
+     * 初始化Navigation
+     */
+    private void initNavigation(){
         //获取侧边栏实体
         NavigationView cenavView=(NavigationView)findViewById(R.id.nav_ceview);
         cenavView.setCheckedItem(R.id.nav_myinfo);
@@ -66,6 +95,17 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent1);
             }
         });
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getData();
+        setContentView(R.layout.activity_main);
+        signView();
+        loadToolbar();
+        initNavigation();
+
     }
     //侧边栏菜单的点击事件
     @Override
@@ -97,5 +137,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.bt_start_sport:
+                break;
+            case R.id.bt_stop_sport:
+                break;
+            default:
+        }
     }
 }

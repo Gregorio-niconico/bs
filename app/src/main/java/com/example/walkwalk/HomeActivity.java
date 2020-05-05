@@ -188,8 +188,8 @@ public class HomeActivity extends AppCompatActivity {
                 break;
             case R.id.nav_myinfo:
                 break;
-            case R.id.nav_collection:
-                break;
+//            case R.id.nav_collection:
+//                break;
                 default:
         }
         return true;
