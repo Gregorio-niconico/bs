@@ -8,14 +8,25 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.SystemClock;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.walkwalk.step.UpdateUiCallBack;
+import com.example.walkwalk.step.service.StepService;
 import com.example.walkwalk.view.StepArcView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
@@ -23,11 +34,14 @@ import com.google.android.material.navigation.NavigationView;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private DrawerLayout mDrawerLayout;
     private static String TAG="主页面";
+    private static final int UPDATE_TEXT = 1;
     private String user_name,user_pwd,user_sex,user_age;
-    private int user_id;
+    private int user_id,target_count=3000,target_v,speed;
     private StepArcView cc;
     private Button btn_start,btn_stop;
     private TextView tv_v,tv_time,tv_target_count,tv_target_v;
+    private boolean isBind = false;
+    private Chronometer chronometer;
     /**
      * 注册组件
      */
@@ -36,7 +50,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_start = (Button)findViewById(R.id.bt_start_sport);
         btn_stop = (Button)findViewById(R.id.bt_stop_sport);
         tv_v = (TextView)findViewById(R.id.tv_data);
-        tv_time = (TextView)findViewById(R.id.tv_time);
+        chronometer = (Chronometer) findViewById(R.id.chronometer);
+        chronometer.setBase(SystemClock.elapsedRealtime());
         tv_target_count = (TextView)findViewById(R.id.tv_target_step);
         btn_start.setOnClickListener(this);
         btn_stop.setOnClickListener(this);
@@ -105,8 +120,80 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         signView();
         loadToolbar();
         initNavigation();
+        initData();
+    }
+
+    private void initData(){
+        cc.setCurrentCount(target_count,0);
+    }
+
+    /**
+     * 开启计步服务
+     */
+    private void setupService(){
+        Intent startIntent = new Intent(this, StepService.class);
+        isBind = bindService(startIntent,conn, Context.BIND_AUTO_CREATE);
+        startService(startIntent);
+    }
+    /**
+     * 停止计步服务
+     */
+    private void stopService(){
+        Intent stopIntent = new Intent(this,StepService.class);
+        //解绑服务
+        unbindService(conn);
+        //停止服务
+        stopService(stopIntent);
 
     }
+    /**
+     * 用于查询应用服务（application Service）的状态的一种interface，
+     * 更详细的信息可以参考Service 和 context.bindService()中的描述，
+     * 和许多来自系统的回调方式一样，ServiceConnection的方法都是进程的主线程中调用的。
+     */
+    ServiceConnection conn = new ServiceConnection() {
+        /**
+         * 在建立起于Service的连接时会调用该方法，目前Android是通过IBind机制实现与服务的连接。
+         * @param name 实际所连接到的Service组件名称
+         * @param service 服务的通信信道的IBind，可以通过Service访问对应服务
+         */
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            StepService stepService = ((StepService.StepBinder) service).getService();
+            //设置初始化数据
+            cc.setCurrentCount(target_count, stepService.getStepCount());
+
+            //设置步数监听回调
+            stepService.registerCallback(new UpdateUiCallBack() {
+                @Override
+                public void updateUi(int stepCount) {
+                    cc.setCurrentCount(target_count, stepCount);
+                    speed = getSpeed(stepCount);
+                    Log.d(TAG, "updateUi: "+stepCount+" "+"speed:"+speed);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Message message = new Message();
+                            message.what = UPDATE_TEXT;
+                            mHandler.sendMessage(message);
+                        }
+                    }).start();
+                }
+            });
+        }
+        /**
+         * 当与Service之间的连接丢失的时候会调用该方法，
+         * 这种情况经常发生在Service所在的进程崩溃或者被Kill的时候调用，
+         * 此方法不会移除与Service的连接，当服务重新启动的时候仍然会调用 onServiceConnected()。
+         * @param name 丢失连接的组件名称
+         */
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+
+    };
+
     //侧边栏菜单的点击事件
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -137,16 +224,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (isBind) {
+            this.unbindService(conn);
+        }
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.bt_start_sport:
+                setupService();
+                chronometer.start();
+                Log.d(TAG, "onClick: 开始计步");
                 break;
             case R.id.bt_stop_sport:
+                stopService();
+                chronometer.stop();
+                Log.d(TAG, "onClick: 停止计步");
                 break;
             default:
         }
     }
+
+    /**
+     * 获取计时时间
+     * @return
+     */
+    private float getTime(){
+        float minute = Integer.parseInt(chronometer.getText().toString().split(":")[0]);
+        float second = Integer.parseInt(chronometer.getText().toString().split(":")[1]);
+        float time = minute + second/60;
+        return time;
+    }
+
+    private int getSpeed(int count){
+        int speed = 0;
+        float time = getTime();
+        Log.d(TAG, "getSpeed:time "+time);
+        speed = (int) (count/time);
+        Log.d(TAG, "getSpeed: speed"+speed);
+        return speed;
+    }
+
+    private Handler mHandler = new Handler(){
+        public void handleMessage(Message msg){
+            switch (msg.what){
+                case UPDATE_TEXT:
+                    //UI操作
+                    tv_v.setText(speed);
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
 }
