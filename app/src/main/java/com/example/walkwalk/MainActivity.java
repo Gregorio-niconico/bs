@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static String TAG="主页面";
     private static final int UPDATE_TEXT = 1;
     private String user_name,user_pwd,user_sex,user_age;
-    private int user_id,target_count=3000,target_v,speed;
+    private int user_id,target_count=3000,target_v,speed,step_count=0;
     private StepArcView cc;
     private Button btn_start,btn_stop;
     private TextView tv_v,tv_time,tv_target_count,tv_target_v;
@@ -52,6 +52,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_v = (TextView)findViewById(R.id.tv_data);
         chronometer = (Chronometer) findViewById(R.id.chronometer);
         chronometer.setBase(SystemClock.elapsedRealtime());
+        //计时器的回调监听函数，实时更新步频
+        chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+            @Override
+            public void onChronometerTick(Chronometer chronometer) {
+                speed = getSpeed(step_count);
+                Log.d(TAG, "updateUi: "+step_count+" "+"speed:"+speed);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        tv_v.setText(speed+"");
+                    }
+                });
+            }
+        });
         tv_target_count = (TextView)findViewById(R.id.tv_target_step);
         btn_start.setOnClickListener(this);
         btn_stop.setOnClickListener(this);
@@ -168,16 +182,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 @Override
                 public void updateUi(int stepCount) {
                     cc.setCurrentCount(target_count, stepCount);
-                    speed = getSpeed(stepCount);
-                    Log.d(TAG, "updateUi: "+stepCount+" "+"speed:"+speed);
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Message message = new Message();
-                            message.what = UPDATE_TEXT;
-                            mHandler.sendMessage(message);
-                        }
-                    }).start();
+                    step_count = stepCount;
+
+
+
                 }
             });
         }
@@ -257,6 +265,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return time;
     }
 
+    /**
+     * 传入步数，获取步频
+     * @param count
+     * @return
+     */
     private int getSpeed(int count){
         int speed = 0;
         float time = getTime();
@@ -265,17 +278,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "getSpeed: speed"+speed);
         return speed;
     }
-
-    private Handler mHandler = new Handler(){
-        public void handleMessage(Message msg){
-            switch (msg.what){
-                case UPDATE_TEXT:
-                    //UI操作
-                    tv_v.setText(speed);
-                    break;
-                default:
-                    break;
-            }
-        }
-    };
 }
