@@ -32,6 +32,8 @@ dependencies {
     implementation 'de.hdodenhof:circleimageview:3.1.0'
     //下拉刷新
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
+    //MP图表
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0-alpha'
 
 
     testImplementation 'junit:junit:4.12'

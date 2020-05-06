@@ -1,12 +1,17 @@
 package com.example.walkwalk;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
 import android.Manifest;
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
@@ -20,8 +25,6 @@ import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
-import com.example.walkwalk.ViewPaper.SportsFragment;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +35,28 @@ public class MapTrackActivity extends AppCompatActivity {
     private LocationClient mLocationClient;
     private LocationClientOption locationOption;
     private boolean isFirstLocate=true;
+
+    private void signView(){
+        androidx.appcompat.widget.Toolbar toolbar=(Toolbar)findViewById(R.id.map_toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar=getSupportActionBar();
+        //设置标题栏的按钮效果
+        if(actionBar!=null){
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(R.mipmap.back);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:
+                finish();
+                break;
+        }
+        return true;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,37 +70,38 @@ public class MapTrackActivity extends AppCompatActivity {
         //注册监听函数
         mLocationClient.registerLocationListener(new MyLocationListener());
         setContentView(R.layout.activity_map_track);
-
+        signView();
         //声明LocationClient类实例并配置定位参数
         locationOption = new LocationClientOption();
         //获取地图控件引用
-        mMapView = (MapView) findViewById(R.id.bMapView);
+        mMapView = (MapView) findViewById(R.id.mp_bd);
         mBaiduMap = mMapView.getMap();
         //显示卫星图层
-        mBaiduMap.setMapType(BaiduMap.MAP_TYPE_SATELLITE);
+        mBaiduMap.setMapType(BaiduMap.MAP_TYPE_NORMAL);
+        mBaiduMap.setMyLocationEnabled(true);
 
-//        List<String> permissionList = new ArrayList<>();
-//        //申请危险权限
-//        if (ContextCompat.checkSelfPermission(this,
-//                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
-//        }
-//        if (ContextCompat.checkSelfPermission(this,
-//                Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-//            permissionList.add(Manifest.permission.READ_PHONE_STATE);
-//        }
-//        if (ContextCompat.checkSelfPermission(this,
-//                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-//            permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-//        }
-//        if (!permissionList.isEmpty()) {
-//            //将权限的申请情况授权与否的List转换为数组
-//            String[] permissions = permissionList.toArray(new String[permissionList.size()]);
-//            //一次性申请三个权限
-//            MapTrackActivity.this.requestPermissions(permissions, 1);
-//        } else {
+        List<String> permissionList = new ArrayList<>();
+        //申请危险权限
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            permissionList.add(Manifest.permission.READ_PHONE_STATE);
+        }
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+        if (!permissionList.isEmpty()) {
+            //将权限的申请情况授权与否的List转换为数组
+            String[] permissions = permissionList.toArray(new String[permissionList.size()]);
+            //一次性申请三个权限
+            ActivityCompat.requestPermissions(MapTrackActivity.this,permissions, 1);
+        } else {
             requestLocation();
-//        }
+        }
     }
     //请求定位
     private void requestLocation() {
@@ -95,6 +121,11 @@ public class MapTrackActivity extends AppCompatActivity {
             mBaiduMap.animateMapStatus(update);
             isFirstLocate=false;
         }
+        MyLocationData.Builder locationBuilder = new MyLocationData.Builder();
+        locationBuilder.latitude(location.getLatitude());
+        locationBuilder.longitude(location.getLongitude());
+        MyLocationData locationData = locationBuilder.build();
+        mBaiduMap.setMyLocationData(locationData);
 
     }
     /**
@@ -105,7 +136,7 @@ public class MapTrackActivity extends AppCompatActivity {
 //可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
         locationOption.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);
 //可选，默认gcj02，设置返回的定位结果坐标系，如果配合百度地图使用，建议设置为bd09ll;
-        locationOption.setCoorType("gcj02");
+        locationOption.setCoorType("bd0911");
 //可选，默认0，即仅定位一次，设置发起连续定位请求的间隔需要大于等于1000ms才是有效的
         locationOption.setScanSpan(1000);
 //可选，设置是否需要地址信息，默认不需要
@@ -139,37 +170,6 @@ public class MapTrackActivity extends AppCompatActivity {
     public class MyLocationListener extends BDAbstractLocationListener {
         @Override
         public void onReceiveLocation(BDLocation location){
-            //此处的BDLocation为定位结果信息类，通过它的各种get方法可获取定位相关的全部结果
-            //以下只列举部分获取经纬度相关（常用）的结果信息
-            //更多结果信息获取说明，请参照类参考中BDLocation类中的说明
-            StringBuilder currentPosition=new StringBuilder();
-            //获取纬度信息
-            double latitude = location.getLatitude();
-            currentPosition.append("纬度：").append(latitude).append("\n");
-            //获取经度信息
-            double longitude = location.getLongitude();
-            currentPosition.append("经度：").append(longitude).append("\n");
-            String addr = location.getAddrStr();    //获取详细地址信息
-            String country = location.getCountry();    //获取国家
-            String province = location.getProvince();    //获取省份
-            currentPosition.append("省份：").append(province).append("\n");
-            String city = location.getCity();    //获取城市
-            currentPosition.append("城市：").append(city).append("\n");
-            String district = location.getDistrict();    //获取区县
-            currentPosition.append("区县：").append(district).append("\n");
-            String street = location.getStreet();    //获取街道信息
-            currentPosition.append("街道：").append(street).append("\n");
-            String adcode = location.getAdCode();    //获取adcode
-            String town = location.getTown();    //获取乡镇信息
-            currentPosition.append("乡镇：").append(town).append("\n");
-            //获取定位精度，默认值为0.0f
-            float radius = location.getRadius();
-            //获取经纬度坐标类型，以LocationClientOption中设置过的坐标类型为准
-            String coorType = location.getCoorType();
-            //获取定位类型、定位错误返回码，具体信息可参照类参考中BDLocation类中的说明
-            int errorCode = location.getLocType();
-            Log.d(TAG, "onReceiveLocation: "+currentPosition);
-
             //mapView 销毁后不在处理新接收的位置
             if (location == null || mMapView == null){
                 return;

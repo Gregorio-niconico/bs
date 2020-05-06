@@ -89,7 +89,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginLeft="40dp"
+                            android:layout_marginLeft="@dimen/left"
                             android:drawableLeft="@mipmap/target"
                             android:drawablePadding="10dp"
                             android:gravity="center_vertical"
@@ -116,7 +116,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginLeft="40dp"
+                            android:layout_marginLeft="@dimen/left"
                             android:drawableLeft="@mipmap/target"
                             android:drawablePadding="10dp"
                             android:gravity="center_vertical"
@@ -143,7 +143,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginLeft="40dp"
+                            android:layout_marginLeft="@dimen/left"
                             android:drawableLeft="@mipmap/target"
                             android:drawablePadding="10dp"
                             android:gravity="center_vertical"
@@ -165,7 +165,7 @@
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:layout_gravity="bottom"
-                android:layout_marginLeft="40dp"
+                android:layout_marginLeft="@dimen/left"
                 android:background="@mipmap/map1"/>
         </LinearLayout>
         <LinearLayout

@@ -139,8 +139,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         target.Target ct = getTarget.target();
         Log.d(TAG, "initTarget: "+ct.getT_walkV_min()+" "+ct.getT_stepCount_min());
-        String t_count = ""+ct.getT_stepCount_min();
-        String t_speed = ""+ct.getT_walkV_min();
+        String t_count = (int)(ct.getT_stepCount_min())+"—"+(int)(ct.getT_stepCount_max());
+        String t_speed = ct.getT_walkV_min()+"—"+ct.getT_walkV_max();
         tv_target_count.setText(t_count);
         tv_target_v.setText(t_speed);
     }
@@ -232,6 +232,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.nav_myinfo:
                 break;
             case R.id.nav_analyze:
+                startActivity(new Intent(MainActivity.this,AnalyseActivity.class));
                 break;
             default:
         }

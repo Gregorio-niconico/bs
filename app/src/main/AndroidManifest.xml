@@ -33,7 +33,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".MapTrackActivity"></activity>
+        <activity android:name=".AnalyseActivity"></activity>
+        <activity
+            android:name=".MapTrackActivity"
+            android:label=""
+            android:theme="@style/AppTheme.NoActionBarE" />
         <activity
             android:name=".MainActivity"
             android:label=""

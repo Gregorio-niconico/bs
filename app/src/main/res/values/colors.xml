@@ -9,5 +9,6 @@
     <color name="colorAccent">#48435C</color>
     <color name="textColorPrimary">#61E786</color>
     <color name="windowBackground">#99CC33</color>
+    <color name="colorBlueGreen">#4BB9A9</color>
 
 </resources>
