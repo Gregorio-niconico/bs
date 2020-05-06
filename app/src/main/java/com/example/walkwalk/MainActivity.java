@@ -6,16 +6,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.viewpager.widget.ViewPager;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.MenuItem;
@@ -25,21 +21,23 @@ import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.walkwalk.mysqlDB.UserDB;
+import com.example.walkwalk.mysqlDB.target;
 import com.example.walkwalk.step.UpdateUiCallBack;
 import com.example.walkwalk.step.service.StepService;
 import com.example.walkwalk.view.StepArcView;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private DrawerLayout mDrawerLayout;
     private static String TAG="主页面";
-    private static final int UPDATE_TEXT = 1;
+
     private String user_name,user_pwd,user_sex,user_age;
     private int user_id,target_count=3000,target_v,speed,step_count=0;
     private StepArcView cc;
     private Button btn_start,btn_stop;
-    private TextView tv_v,tv_time,tv_target_count,tv_target_v;
+    private TextView tv_v,tv_target_count,tv_target_v;
+    private ImageView mapImg;
     private boolean isBind = false;
     private Chronometer chronometer;
     /**
@@ -50,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_start = (Button)findViewById(R.id.bt_start_sport);
         btn_stop = (Button)findViewById(R.id.bt_stop_sport);
         tv_v = (TextView)findViewById(R.id.tv_data);
+        mapImg = (ImageView)findViewById(R.id.img_map);
         chronometer = (Chronometer) findViewById(R.id.chronometer);
         chronometer.setBase(SystemClock.elapsedRealtime());
         //计时器的回调监听函数，实时更新步频
@@ -67,8 +66,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
         tv_target_count = (TextView)findViewById(R.id.tv_target_step);
+        tv_target_v = (TextView)findViewById(R.id.tv_target_v);
         btn_start.setOnClickListener(this);
         btn_stop.setOnClickListener(this);
+        mapImg.setOnClickListener(this);
     }
     /**
      * 获取用户数据
@@ -125,7 +126,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
     }
-
+    /**
+     * 初始化用户目标，显示
+     */
+    private void initTarget(){
+        GetTarget getTarget = new GetTarget(user_age,user_sex);
+        getTarget.start();
+        try{
+            getTarget.join();
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
+        target.Target ct = getTarget.target();
+        Log.d(TAG, "initTarget: "+ct.getT_walkV_min()+" "+ct.getT_stepCount_min());
+        String t_count = ""+ct.getT_stepCount_min();
+        String t_speed = ""+ct.getT_walkV_min();
+        tv_target_count.setText(t_count);
+        tv_target_v.setText(t_speed);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -135,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         loadToolbar();
         initNavigation();
         initData();
+        initTarget();
     }
 
     private void initData(){
@@ -250,6 +269,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 chronometer.stop();
                 Log.d(TAG, "onClick: 停止计步");
                 break;
+            case R.id.img_map:
+                startActivity(new Intent(MainActivity.this,MapTrackActivity.class));
+                break;
             default:
         }
     }
@@ -277,5 +299,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         speed = (int) (count/time);
         Log.d(TAG, "getSpeed: speed"+speed);
         return speed;
+    }
+
+
+
+    /**
+     * 获取用户目标子线程
+     */
+    class GetTarget extends Thread{
+
+        private String age,sex;
+        public GetTarget()
+        {
+            age = sex = "";
+        }
+        public GetTarget(String age, String sex) {
+            this.age = age;
+            this.sex = sex;
+        }
+        @Override
+        public void run() {
+            target.myTarget= UserDB.GetTarget(age,sex);
+                Log.d(TAG, "当前=用户信息："+target.myTarget.getTargetID()+" "+target.myTarget.getAgeID()+
+                        " "+target.myTarget.getSex()+" "+target.myTarget.getT_stepCount_min()+" "+target.myTarget.getT_walkV_min());
+        }
+        public target.Target target(){
+            return target.myTarget;
+        }
     }
 }

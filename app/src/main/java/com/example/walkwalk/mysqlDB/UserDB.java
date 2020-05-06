@@ -22,7 +22,6 @@ import static android.content.ContentValues.TAG;
  */
 public class UserDB {
     private static String TAG="UserDB";
-
     //用户登录
     public static int userSignIn(String name,String pwd){
         mysqlDB.con=mysqlDB.getConnection();
@@ -54,6 +53,7 @@ public class UserDB {
         }
         return 1;
     }
+
     //用户注册
     public static int userSignUp(User user){
         mysqlDB.con=mysqlDB.getConnection();
@@ -94,6 +94,41 @@ public class UserDB {
             return true;
         else
             return false;
+    }
+    //查询目标
+    public static target.Target GetTarget(String userAge ,String userSex){
+        mysqlDB.con = mysqlDB.getConnection();
+        String sql = "select * from target_info where ageID=? and sex=?";
+        try{
+            int age = Integer.parseInt(userAge);
+            mysqlDB.stmt = mysqlDB.con.prepareStatement(sql);
+            mysqlDB.stmt.setInt(1,age/10);
+            mysqlDB.stmt.setString(2,userSex);
+            mysqlDB.rs = mysqlDB.stmt.executeQuery();
+        }catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        target.Target myTarget = new target.Target();
+        try{
+            if(mysqlDB.rs.next()){
+                myTarget.setTargetID(mysqlDB.rs.getInt(1));
+                myTarget.setAgeID(mysqlDB.rs.getString(2));
+                myTarget.setSex(mysqlDB.rs.getString(3));
+                myTarget.setT_stepCount_min(mysqlDB.rs.getInt(4));
+                myTarget.setT_stepCount_max(mysqlDB.rs.getInt(5));
+                myTarget.setT_walkV_min(mysqlDB.rs.getFloat(6));
+                myTarget.setT_walkV_max(mysqlDB.rs.getFloat(7));
+
+                return myTarget;
+            }else{
+                return myTarget;
+            }
+        }catch (SQLException e)
+        {
+            return myTarget;
+        }
+
     }
     //获取当前用户
     public static User Getuser(String userName) {
