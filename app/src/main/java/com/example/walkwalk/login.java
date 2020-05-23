@@ -27,6 +27,7 @@ public class login extends AppCompatActivity implements View.OnClickListener{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        //注册控件
         et_username=(EditText)findViewById(R.id.et_username);
         et_pwd=(EditText)findViewById(R.id.et_pwd);
         Button loginButton=(Button)findViewById(R.id.button_login);

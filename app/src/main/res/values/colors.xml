@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#336699</color>
+    <color name="colorPrimary">#999999</color>
     <color name="colorLightPink">#FF6666</color>
     <color name="colorPink">#FFCCCC</color>
     <color name="colorGray">#DCDCDC</color>
-    <color name="colorBule">#57A7EF</color>
-    <color name="colorPrimaryDark">#336699</color>
+    <color name="colorBule">#0099CC</color>
+    <color name="colorPrimaryDark">#999999</color>
     <color name="colorAccent">#48435C</color>
     <color name="textColorPrimary">#61E786</color>
     <color name="windowBackground">#99CC33</color>
-    <color name="colorBlueGreen">#4BB9A9</color>
+    <color name="colorBlueGreen">#336666</color>
 
 </resources>
