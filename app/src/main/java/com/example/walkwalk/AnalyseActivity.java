@@ -8,8 +8,15 @@ import androidx.appcompat.widget.Toolbar;
 import android.os.Bundle;
 import android.view.MenuItem;
 
-public class AnalyseActivity extends AppCompatActivity {
+import com.example.walkwalk.view.HistoryChartView;
 
+public class AnalyseActivity extends AppCompatActivity implements HistoryChartView.OnViewLayoutListener {
+    private final static int WEEK_MODE = 1;
+    private HistoryChartView mHistoryChartView;
+    private int mode = WEEK_MODE;
+    private String mStrWeekRoomData = "2445,3009,1980,2677,2409,2845,3102";
+    private String mStrWeekSettingData = "26,26,26,26,26,26,26";
+    private String mStrWeekPowerTimeData = "60,70,80,80,90,95,100";
     /**
      * 加载toolbar
      */
@@ -39,6 +46,39 @@ public class AnalyseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_analyse);
         loadToolbar();
+        initView();
+    }
+    public void initView() {
+        mHistoryChartView = (HistoryChartView) findViewById(R.id.mutiHistoryChartView);
+        mHistoryChartView.setOnViewLayoutListener(this);
+    }
+    /**
+     * 更新界面
+     */
+    protected void updateView() {
+        mHistoryChartView.setData(getAllHistoryViewData(), mode);
     }
 
+    /**
+     * 获取要绘制的历史数据全状态
+     *
+     * @return 全状态数据
+     */
+    private String getAllHistoryViewData() {
+        String allHistoryData = "";
+        switch (mode) {
+            case WEEK_MODE:
+                allHistoryData = mStrWeekRoomData + "-" + mStrWeekSettingData + "-"
+                        + mStrWeekPowerTimeData;
+                break;
+            default:
+                break;
+        }
+        return allHistoryData;
+    }
+    @Override
+    public void onLayoutSuccess() {
+        //布局onlayout成功后，更新View数据
+        updateView();
+    }
 }

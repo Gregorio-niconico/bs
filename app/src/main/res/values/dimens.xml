@@ -6,4 +6,32 @@
     <dimen name="text_target_hint">10dp</dimen>
     <dimen name="text_target">13dp</dimen>
     <dimen name="text_target_width">270dp</dimen>
+
+    <!-- HistoryModeView margin & size -->
+    <dimen name="history_mode_height">70dp</dimen>
+    <dimen name="history_mode_margin_left">10dp</dimen>
+    <dimen name="history_mode_margin_right">10dp</dimen>
+    <dimen name="history_mode_select_text_size">18sp</dimen>
+    <dimen name="history_mode_un_select_text_size">14sp</dimen>
+
+    <!-- HistoryChartView margins & size -->
+    <dimen name="history_margin_bottom">100dp</dimen>
+    <dimen name="history_margin_left">60dp</dimen>
+    <dimen name="history_margin_right">60dp</dimen>
+    <dimen name="history_margin_top">100dp</dimen>
+    <dimen name="history_xlabel_text_size">23sp</dimen>
+    <dimen name="history_ylabel_text_size">30sp</dimen>
+    <dimen name="history_x_unit_text_size">25sp</dimen>
+    <dimen name="history_y_unit_text_size">28sp</dimen>
+    <dimen name="history_line_stroke_width">3sp</dimen>
+    <dimen name="history_data_stroke_width">5sp</dimen>
+    <dimen name="history_circle_radius">6sp</dimen>
+    <dimen name="history_x_first_point_offset">30sp</dimen>
+
+    <!-- HistoryTipsView margin & size -->
+    <dimen name="history_tips_margin_bottom">40dp</dimen>
+    <dimen name="history_tips_margin_left">50dp</dimen>
+    <dimen name="history_tips_margin_right">10dp</dimen>
+    <dimen name="history_tips_textSize">10sp</dimen>
+    <dimen name="history_tips_padding_top">10dp</dimen>
 </resources>

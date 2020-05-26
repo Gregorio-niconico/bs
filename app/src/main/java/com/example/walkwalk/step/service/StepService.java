@@ -280,6 +280,7 @@ public class StepService extends Service implements SensorEventListener {
         }
         Log.d(TAG, "updateNotification()");
     }
+    
 
     /**
      * UI监听器对象

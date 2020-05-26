@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView mapImg;
     private boolean isBind = false;
     private Chronometer chronometer;
+    private NavigationView navigationView;
     /**
      * 注册组件
      */
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_start = (Button)findViewById(R.id.bt_start_sport);
         btn_stop = (Button)findViewById(R.id.bt_stop_sport);
         tv_v = (TextView)findViewById(R.id.tv_data);
+
         mapImg = (ImageView)findViewById(R.id.img_map);
         chronometer = (Chronometer) findViewById(R.id.chronometer);
         chronometer.setBase(SystemClock.elapsedRealtime());
@@ -154,6 +156,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initNavigation();
         initData();
         initTarget();
+        navigationView =(NavigationView)findViewById(R.id.nav_ceview);
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.nav_myinfo:
+                                break;
+                            case R.id.nav_analyze:
+//                                Intent intent = new Intent(MainActivity.this, AnalyseActivity.class);
+//                                startActivity(intent);
+                                startActivity(new Intent(MainActivity.this,AnalyseActivity.class));
+                                break;
+                        }
+                        return true;
+                    }
+                });
     }
 
     private void initData(){
@@ -202,9 +221,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 public void updateUi(int stepCount) {
                     cc.setCurrentCount(target_count, stepCount);
                     step_count = stepCount;
-
-
-
                 }
             });
         }
@@ -229,12 +245,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 break;
-            case R.id.nav_myinfo:
-                break;
-            case R.id.nav_analyze:
-                startActivity(new Intent(MainActivity.this,AnalyseActivity.class));
-                break;
-            default:
+
         }
         return true;
     }
@@ -271,7 +282,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d(TAG, "onClick: 停止计步");
                 break;
             case R.id.img_map:
-                startActivity(new Intent(MainActivity.this,MapTrackActivity.class));
+//                startActivity(new Intent(MainActivity.this,MapTrackActivity.class));
+                startActivity(new Intent(MainActivity.this,DynamicDemo.class));
+
                 break;
             default:
         }

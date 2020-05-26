@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -13,8 +14,61 @@
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         ></androidx.appcompat.widget.Toolbar>
-    <com.github.mikephil.charting.charts.PieChart
-        android:id="@+id/chart"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_weight="1" >
+        <com.example.walkwalk.view.HistoryChartView
+            android:id="@+id/mutiHistoryChartView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            custom:circle_radius="@dimen/history_circle_radius"
+            custom:data_stroke_width="@dimen/history_data_stroke_width"
+            custom:first_data_line_color="@color/saswell_indoor_temp"
+            custom:line_color="@color/saswell_yellow"
+            custom:line_stroke_width="@dimen/history_line_stroke_width"
+            custom:margin_bottom="@dimen/history_margin_bottom"
+            custom:margin_left="@dimen/history_margin_left"
+            custom:margin_right="@dimen/history_margin_right"
+            custom:margin_top="@dimen/history_margin_top"
+            custom:rect_background_color="@color/saswell_power_time"
+            custom:second_data_line_color="@color/saswell_setpoint_temp"
+            custom:unit_color="@color/saswell_light_grey"
+            custom:x_first_point_offset="@dimen/history_x_first_point_offset"
+            custom:x_unit_text="@string/history_x_unit_day"
+            custom:x_unit_text_size="@dimen/history_x_unit_text_size"
+            custom:xlabel_text_size="@dimen/history_xlabel_text_size"
+            custom:y1_unit_text="@string/history_y1_unit"
+            custom:y2_unit_text="@string/history_y2_unit"
+            custom:y_unit_text_size="@dimen/history_y_unit_text_size"
+            custom:ylabel_text_size="@dimen/history_ylabel_text_size" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_tips"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/history_tips_margin_bottom"
+        android:layout_marginLeft="@dimen/history_tips_margin_left"
+        android:layout_marginRight="@dimen/history_tips_margin_right"
+        android:orientation="horizontal"
+        android:paddingTop="@dimen/history_tips_padding_top" >
+
+        <com.example.walkwalk.view.HistoryTipView
+            style="@style/history_tip_view_style"
+            android:src="@mipmap/indoor_temp"
+            custom:tip_one_text="步数" />
+
+        <com.example.walkwalk.view.HistoryTipView
+            style="@style/history_tip_view_style"
+            android:src="@mipmap/set_point_temp"
+            custom:tip_one_text="步频" />
+
+        <com.example.walkwalk.view.HistoryTipView
+            style="@style/history_tip_view_style"
+            android:src="@mipmap/on_time"
+            custom:tip_one_text="运动时间" />
+    </LinearLayout>
 </LinearLayout>

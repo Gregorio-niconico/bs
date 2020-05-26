@@ -7,4 +7,9 @@
     <string name="text_v">步/分钟</string>
     <string name="start_sport">开始</string>
     <string name="stop_sport">停止</string>
+    <string name="history_y1_unit">(步)</string>
+    <string name="history_y2_unit">(步/min)</string>
+    <string name="history_x_unit_day">(DAY)</string>
+    <string name="history_x_unit_hour">(HOUR)</string>
+    <string name="history_x_unit_month">(MONTH)</string>
 </resources>

@@ -25,4 +25,12 @@
         <item name="colorControlActivated">@color/colorPrimary</item>
     </style>
 
+    <style name="history_tip_view_style">
+        <item name="android:textColor">@color/saswell_light_grey2</item>
+        <item name="android:textSize">@dimen/history_tips_textSize</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+
 </resources>
