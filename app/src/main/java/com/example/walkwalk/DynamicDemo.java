@@ -255,7 +255,7 @@ public class DynamicDemo extends AppCompatActivity implements SensorEventListene
             //注意这里只接受gps点，需要在室外定位。
 //            if (location.getLocType() == BDLocation.TypeGpsLocation) {
             Log.d(TAG, "onReceiveLocation: 2");
-                info.setText("GPS信号弱，请稍后...");
+//                info.setText("GPS信号弱，请稍后...");
                 if (isFirstLoc) {//首次定位
                     //第一个点很重要，决定了轨迹的效果，gps刚开始返回的一些点精度不高，尽量选一个精度相对较高的起始点
 //                    LatLng ll = null;
@@ -275,7 +275,7 @@ public class DynamicDemo extends AppCompatActivity implements SensorEventListene
                     oStart.position(points.get(0));// 覆盖物位置点，第一个点为起点
                     oStart.icon(startBD);// 设置覆盖物图片
                     mBaiduMap.addOverlay(oStart); // 在地图上添加此图层
-                    progressBarRl.setVisibility(View.GONE);
+//                    progressBarRl.setVisibility(View.GONE);
                     return;//画轨迹最少得2个点，首地定位到这里就可以返回了
                 }
                 //从第二个点开始
