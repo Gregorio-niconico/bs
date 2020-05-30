@@ -391,17 +391,17 @@ public class HistoryChartView extends View {
         circleRadius = GetDpSpUtils.px2sp(getContext(), circleRadiusPx);
 
         lineColor = ta.getColor(R.styleable.HistoryChartView_line_color,
-                getResources().getColor(R.color.saswell_yellow));
+                getResources().getColor(R.color.colorAccent));
         roomTempLineColor = ta.getColor(
                 R.styleable.HistoryChartView_first_data_line_color,
-                getResources().getColor(R.color.saswell_indoor_temp));
+                getResources().getColor(R.color.colorLightPink));
         targetTempLineColor = ta.getColor(
                 R.styleable.HistoryChartView_second_data_line_color,
-                getResources().getColor(R.color.saswell_setpoint_temp));
+                getResources().getColor(R.color.colorAccent));
 
         powerTimeLineColor = ta.getColor(
                 R.styleable.HistoryChartView_rect_background_color,
-                getResources().getColor(R.color.saswell_power_time));
+                getResources().getColor(R.color.colorBlueGreen));
 
         mUnitColor = ta.getColor(R.styleable.HistoryChartView_unit_color,
                 getResources().getColor(R.color.saswell_light_grey));
@@ -640,7 +640,7 @@ public class HistoryChartView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        mCacheCanvas.drawColor(Color.BLACK);
+        mCacheCanvas.drawColor(Color.WHITE);
 
         drawGreyXLine(mCacheCanvas, linePaint);
 

@@ -33,7 +33,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".DynamicDemo"></activity>
+        <activity android:name=".DynamicDemo"
+            android:label=""
+            android:theme="@style/AppTheme.NoActionBarE">
+        </activity>
         <activity
             android:name=".MapTrackActivity"
             android:label=""
@@ -53,7 +56,7 @@
             android:theme="@style/AppTheme.NoActionBarE" />
         <activity
             android:name=".AnalyseActivity"
-            android:label=""
+            android:label="运动数据统计"
             android:theme="@style/AppTheme.NoActionBarE" />
         <activity
             android:name=".HomeActivity"
