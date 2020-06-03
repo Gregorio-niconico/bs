@@ -1,9 +1,5 @@
 package com.example.walkwalk;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -11,11 +7,16 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
@@ -42,26 +43,29 @@ import com.baidu.mapapi.utils.DistanceUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DynamicDemo extends AppCompatActivity implements SensorEventListener {
+import static android.content.Context.SENSOR_SERVICE;
+
+public class DemoFragment extends Fragment implements SensorEventListener {
     private final String TAG = "Map";
     // 定位相关
     LocationClient mLocClient;
-    private LocationClientOption locationOption;
+    public LocationClientOption locationOption;
     public MyLocationListenner myListener = new MyLocationListenner();
-    private int mCurrentDirection = 0;
-    private double mCurrentLat = 0.0;
-    private double mCurrentLon = 0.0;
-    MapView mMapView;
-    BaiduMap mBaiduMap;
+    public int mCurrentDirection = 0;
+    public double mCurrentLat = 0.0;
+    public double mCurrentLon = 0.0;
 
-    private TextView info;
+    public MapView mMapView;
+    public BaiduMap mBaiduMap;
+
+    public TextView info;
     private RelativeLayout progressBarRl;
 
     boolean isFirstLoc = true; // 是否首次定位
-    private MyLocationData locData;
+    public MyLocationData locData;
     float mCurrentZoom = 19f;//默认地图缩放比例值
 
-    private SensorManager mSensorManager;
+    public SensorManager mSensorManager;
 
     //起点图标
     BitmapDescriptor startBD ;
@@ -72,46 +76,30 @@ public class DynamicDemo extends AppCompatActivity implements SensorEventListene
     Polyline mPolyline;//运动轨迹图层
     LatLng last = new LatLng(0, 0);//上一个定位点
     MapStatus.Builder builder;
-    private int size ;
 
-    private void loadToolbar(){
-        androidx.appcompat.widget.Toolbar toolbar=(Toolbar)findViewById(R.id.map_bar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar=getSupportActionBar();
-        //设置标题栏的按钮效果
-        if(actionBar!=null){
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(R.mipmap.back);
-        }
-    }
+    @Nullable
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
-            case android.R.id.home:
-//                finish();
-
-                break;
-        }
-        return true;
-    }
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // 在使用 SDK 各组间之前初始化 context 信息，传入 ApplicationContext
-        SDKInitializer.initialize(getApplicationContext());
+        SDKInitializer.initialize(getActivity().getApplicationContext());
         //自4.3.0起，百度地图SDK所有接口均支持百度坐标和国测局坐标，用此方法设置您使用的坐标类型.
         //包括BD09LL和GCJ02两种坐标，默认是BD09LL坐标。
         SDKInitializer.setCoordType(CoordType.BD09LL);
-        setContentView(R.layout.activity_dynamic_demo);
-        loadToolbar();
+        View view = inflater.inflate(R.layout.map_fragmentdemo,null);
+        mSensorManager = (SensorManager) getActivity().getSystemService(SENSOR_SERVICE);// 获取传感器管理服务
+
+        // 地图初始化
+        mMapView = (MapView)view.findViewById(R.id.baidumapView_f);
+        mBaiduMap = mMapView.getMap();
+        return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
         startBD = BitmapDescriptorFactory.fromResource(R.drawable.ic_me_history_startpoint);
         finishBD = BitmapDescriptorFactory.fromResource(R.drawable.ic_me_history_finishpoint);
 
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);// 获取传感器管理服务
-
-        // 地图初始化
-        mMapView = (MapView) findViewById(R.id.baidumapView);
-        mBaiduMap = mMapView.getMap();
         // 开启定位图层
         mBaiduMap.setMyLocationEnabled(true);
 
@@ -147,7 +135,7 @@ public class DynamicDemo extends AppCompatActivity implements SensorEventListene
         });
 
         // 定位初始化
-        mLocClient = new LocationClient(this);
+        mLocClient = new LocationClient(getActivity());
         mLocClient.registerLocationListener(myListener);
         locationOption = new LocationClientOption();
 //        option.setLocationMode(LocationClientOption.LocationMode.Device_Sensors);//只用gps定位，需要在室外定位。
@@ -159,11 +147,10 @@ public class DynamicDemo extends AppCompatActivity implements SensorEventListene
 //        mLocClient.setLocOption(option);
         initView();
     }
-
     private void initView() {
-
+            startMap();
 //        Button start = (Button) findViewById(R.id.buttonStart);
-        Button finish = (Button) findViewById(R.id.buttonFinish);
+//        Button finish = (Button) findViewById(R.id.buttonFinish);
 //        info = (TextView) findViewById(R.id.info);
 //        progressBarRl = (RelativeLayout) findViewById(R.id.progressBarRl);
 
@@ -172,9 +159,9 @@ public class DynamicDemo extends AppCompatActivity implements SensorEventListene
 //            @Override
 //            public void onClick(View v) {
 //                if (mLocClient != null && !mLocClient.isStarted()) {
-                    mLocClient.setLocOption(locationOption);
-                    mLocClient.start();
-                     Log.d(TAG, "onClick:  mLocClient.start()");
+//        mLocClient.setLocOption(locationOption);
+//        mLocClient.start();
+//        Log.d(TAG, "onClick:  mLocClient.start()");
 //                    progressBarRl.setVisibility(View.VISIBLE);
 //                    info.setText("GPS信号搜索中，请稍后...");
 //                    mBaiduMap.clear();
@@ -182,36 +169,61 @@ public class DynamicDemo extends AppCompatActivity implements SensorEventListene
 //            }
 //        });
 
-        finish.setOnClickListener(new View.OnClickListener() {
+//        finish.setOnClickListener(new View.OnClickListener() {
+//
+//            @Override
+//            public void onClick(View v) {
+//
+//                if (mLocClient != null && mLocClient.isStarted()) {
+//                    mLocClient.stop();
+//
+////                    progressBarRl.setVisibility(View.GONE);
+//
+//                    if (isFirstLoc) {
+//                        points.clear();
+//                        last = new LatLng(0, 0);
+//                        return;
+//                    }
+//
+//                    MarkerOptions oFinish = new MarkerOptions();// 地图标记覆盖物参数配置类
+//                    oFinish.position(points.get(points.size() - 1));
+//                    oFinish.icon(finishBD);// 设置覆盖物图片
+//                    mBaiduMap.addOverlay(oFinish); // 在地图上添加此图层
+//
+//                    //复位
+//                    points.clear();
+//                    last = new LatLng(0, 0);
+//                    isFirstLoc = true;
+//
+//                }
+//            }
+//        });
 
-            @Override
-            public void onClick(View v) {
+    }
 
-                if (mLocClient != null && mLocClient.isStarted()) {
+    public void startMap(){
+        mLocClient.setLocOption(locationOption);
+        mLocClient.start();
+        Log.d(TAG, "onClick:  mLocClient.start()");
+    }
+
+    public void stopMap(){
+        if (mLocClient != null && mLocClient.isStarted()) {
                     mLocClient.stop();
-
-//                    progressBarRl.setVisibility(View.GONE);
-
                     if (isFirstLoc) {
                         points.clear();
                         last = new LatLng(0, 0);
                         return;
                     }
-
                     MarkerOptions oFinish = new MarkerOptions();// 地图标记覆盖物参数配置类
                     oFinish.position(points.get(points.size() - 1));
                     oFinish.icon(finishBD);// 设置覆盖物图片
                     mBaiduMap.addOverlay(oFinish); // 在地图上添加此图层
-
                     //复位
                     points.clear();
                     last = new LatLng(0, 0);
                     isFirstLoc = true;
-
                 }
-            }
-        });
-
     }
 
     double lastX;
@@ -257,49 +269,49 @@ public class DynamicDemo extends AppCompatActivity implements SensorEventListene
 //            if (location.getLocType() == BDLocation.TypeGpsLocation) {
             Log.d(TAG, "onReceiveLocation: 2");
 //                info.setText("GPS信号弱，请稍后...");
-                if (isFirstLoc) {//首次定位
-                    //第一个点很重要，决定了轨迹的效果，gps刚开始返回的一些点精度不高，尽量选一个精度相对较高的起始点
+            if (isFirstLoc) {//首次定位
+                //第一个点很重要，决定了轨迹的效果，gps刚开始返回的一些点精度不高，尽量选一个精度相对较高的起始点
 //                    LatLng ll = null;
 //                    ll = getMostAccuracyLocation(location);
-                    LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
-                    if(ll == null){
-                        return;
-                    }
-                    isFirstLoc = false;
-                    points.add(ll);//加入集合
-                    last = ll;
-                    Log.d(TAG, "onReceiveLocation: ");
-                    //显示当前定位点，缩放地图
-                    locateAndZoom(location, ll);
-                    //标记起点图层位置
-                    MarkerOptions oStart = new MarkerOptions();// 地图标记覆盖物参数配置类
-                    oStart.position(points.get(0));// 覆盖物位置点，第一个点为起点
-                    oStart.icon(startBD);// 设置覆盖物图片
-                    mBaiduMap.addOverlay(oStart); // 在地图上添加此图层
-//                    progressBarRl.setVisibility(View.GONE);
-                    return;//画轨迹最少得2个点，首地定位到这里就可以返回了
-                }
-                //从第二个点开始
                 LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
-                //sdk回调gps位置的频率是1秒1个，位置点太近动态画在图上不是很明显，可以设置点之间距离大于为5米才添加到集合中
-                if (DistanceUtil.getDistance(last, ll) < 10) {
+                if(ll == null){
                     return;
                 }
-                points.add(ll);//如果要运动完成后画整个轨迹，位置点都在这个集合中
+                isFirstLoc = false;
+                points.add(ll);//加入集合
                 last = ll;
+                Log.d(TAG, "onReceiveLocation: ");
                 //显示当前定位点，缩放地图
                 locateAndZoom(location, ll);
-                //清除上一次轨迹，避免重叠绘画
-                mMapView.getMap().clear();
-                //起始点图层也会被清除，重新绘画
-                MarkerOptions oStart = new MarkerOptions();
-                oStart.position(points.get(0));
-                oStart.icon(startBD);
-                mBaiduMap.addOverlay(oStart);
-                //将points集合中的点绘制轨迹线条图层，显示在地图上
-                OverlayOptions ooPolyline = new PolylineOptions().width(13).color(0xAAFF0000).points(points);
-                mPolyline = (Polyline) mBaiduMap.addOverlay(ooPolyline);
+                //标记起点图层位置
+                MarkerOptions oStart = new MarkerOptions();// 地图标记覆盖物参数配置类
+                oStart.position(points.get(0));// 覆盖物位置点，第一个点为起点
+                oStart.icon(startBD);// 设置覆盖物图片
+                mBaiduMap.addOverlay(oStart); // 在地图上添加此图层
+//                    progressBarRl.setVisibility(View.GONE);
+                return;//画轨迹最少得2个点，首地定位到这里就可以返回了
             }
+            //从第二个点开始
+            LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
+            //sdk回调gps位置的频率是1秒1个，位置点太近动态画在图上不是很明显，可以设置点之间距离大于为5米才添加到集合中
+            if (DistanceUtil.getDistance(last, ll) < 10) {
+                return;
+            }
+            points.add(ll);//如果要运动完成后画整个轨迹，位置点都在这个集合中
+            last = ll;
+            //显示当前定位点，缩放地图
+            locateAndZoom(location, ll);
+            //清除上一次轨迹，避免重叠绘画
+            mMapView.getMap().clear();
+            //起始点图层也会被清除，重新绘画
+            MarkerOptions oStart = new MarkerOptions();
+            oStart.position(points.get(0));
+            oStart.icon(startBD);
+            mBaiduMap.addOverlay(oStart);
+            //将points集合中的点绘制轨迹线条图层，显示在地图上
+            OverlayOptions ooPolyline = new PolylineOptions().width(13).color(0xAAFF0000).points(points);
+            mPolyline = (Polyline) mBaiduMap.addOverlay(ooPolyline);
+        }
 //        }
     }
 
@@ -388,13 +400,13 @@ public class DynamicDemo extends AppCompatActivity implements SensorEventListene
     }
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         mMapView.onPause();
         super.onPause();
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         mMapView.onResume();
         super.onResume();
         // 为系统的方向传感器注册监听器
@@ -403,15 +415,15 @@ public class DynamicDemo extends AppCompatActivity implements SensorEventListene
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         // 取消注册传感器监听
         mSensorManager.unregisterListener(this);
         super.onStop();
     }
 
     @Override
-    protected void onDestroy() {
-        // 退出时销毁定位
+    public void onDestroy() {
+//        // 退出时销毁定位
         mLocClient.unRegisterLocationListener(myListener);
         if (mLocClient != null && mLocClient.isStarted()) {
             mLocClient.stop();
@@ -424,15 +436,5 @@ public class DynamicDemo extends AppCompatActivity implements SensorEventListene
         startBD.recycle();
         finishBD.recycle();
         super.onDestroy();
-    }
-
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        size=points.size();
-        for(int i=0;i<size;i++){
-            outState.putString(i+" ",points.get(i).toString());
-            Log.d(TAG, "onSaveInstanceState: "+size);
-        }
-        super.onSaveInstanceState(outState);
     }
 }

@@ -61,16 +61,14 @@
             style="@style/history_tip_view_style"
             android:src="@mipmap/step_count"
             custom:tip_one_text="步数" />
-
         <com.example.walkwalk.view.HistoryTipView
             style="@style/history_tip_view_style"
-            android:src="@mipmap/step_v"
-            custom:tip_one_text="步频" />
-
+            android:src="@mipmap/set_point_temp"
+            custom:tip_one_text="目标步数" />
         <com.example.walkwalk.view.HistoryTipView
             style="@style/history_tip_view_style"
             android:src="@mipmap/step_time"
-            custom:tip_one_text="运动时间" />
+            custom:tip_one_text="步频" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"

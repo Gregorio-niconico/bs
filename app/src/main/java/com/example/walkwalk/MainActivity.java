@@ -1,15 +1,30 @@
 package com.example.walkwalk;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
@@ -19,8 +34,30 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
+import com.baidu.mapapi.CoordType;
+import com.baidu.mapapi.SDKInitializer;
+import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.MapStatus;
+import com.baidu.mapapi.map.MapStatusUpdate;
+import com.baidu.mapapi.map.MapStatusUpdateFactory;
+import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.map.MyLocationConfiguration;
+import com.baidu.mapapi.map.MyLocationData;
+import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.map.Polyline;
+import com.baidu.mapapi.map.PolylineOptions;
+import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.utils.DistanceUtil;
 import com.example.walkwalk.mysqlDB.UserDB;
 import com.example.walkwalk.mysqlDB.target;
 import com.example.walkwalk.step.UpdateUiCallBack;
@@ -28,19 +65,58 @@ import com.example.walkwalk.step.service.StepService;
 import com.example.walkwalk.view.StepArcView;
 import com.google.android.material.navigation.NavigationView;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener , SensorEventListener {
     private DrawerLayout mDrawerLayout;
     private static String TAG="主页面";
-
+    private String imgPath="",newName="";
     private String user_name,user_pwd,user_sex,user_age;
     private int user_id,target_count=3000,target_v,speed,step_count=0;
     private StepArcView cc;
     private Button btn_start,btn_stop;
     private TextView tv_v,tv_target_count,tv_target_v;
-    private ImageView mapImg;
     private boolean isBind = false;
     private Chronometer chronometer;
     private NavigationView navigationView;
+    private ImageView head_iv;
+    private TextView headName;
+    /**
+     * 通知构建者
+     */
+    private NotificationCompat.Builder mBuilder;
+
+    // 定位相关
+    LocationClient mLocClient;
+    private LocationClientOption locationOption;
+    public MyLocationListenner myListener = new MyLocationListenner();
+    private int mCurrentDirection = 0;
+    private double mCurrentLat = 0.0;
+    private double mCurrentLon = 0.0;
+    MapView mMapView;
+    BaiduMap mBaiduMap;
+
+    private TextView info;
+    private RelativeLayout progressBarRl;
+
+    boolean isFirstLoc = true; // 是否首次定位
+    private MyLocationData locData;
+    float mCurrentZoom = 19f;//默认地图缩放比例值
+
+    private SensorManager mSensorManager;
+
+    //起点图标
+    BitmapDescriptor startBD ;
+    //终点图标
+    BitmapDescriptor finishBD ;
+
+    List<LatLng> points = new ArrayList<LatLng>();//位置点集合
+    Polyline mPolyline;//运动轨迹图层
+    LatLng last = new LatLng(0, 0);//上一个定位点
+    MapStatus.Builder builder;
+
+
     /**
      * 注册组件
      */
@@ -50,9 +126,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_stop = (Button)findViewById(R.id.bt_stop_sport);
         tv_v = (TextView)findViewById(R.id.tv_data);
 
-        mapImg = (ImageView)findViewById(R.id.img_map);
+//        mapImg = (ImageView)findViewById(R.id.img_map);
         chronometer = (Chronometer) findViewById(R.id.chronometer);
-        chronometer.setBase(SystemClock.elapsedRealtime());
         //计时器的回调监听函数，实时更新步频
         chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             @Override
@@ -71,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_target_v = (TextView)findViewById(R.id.tv_target_v);
         btn_start.setOnClickListener(this);
         btn_stop.setOnClickListener(this);
-        mapImg.setOnClickListener(this);
+//        mapImg.setOnClickListener(this);
     }
     /**
      * 获取用户数据
@@ -114,9 +189,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
         View headView=cenavView.inflateHeaderView(R.layout.nav_header);
-        TextView headName=(TextView)headView.findViewById(R.id.nac_username);
-        ImageView head_iv=(ImageView) headView.findViewById(R.id.icon_image);
-        headName.setText(user_name);
+        headName=(TextView)headView.findViewById(R.id.nac_username);
+        head_iv=(ImageView) headView.findViewById(R.id.main_icon_image);
+        if(imgPath.isEmpty()){
+            head_iv.setImageResource(R.mipmap.head);
+        }else{
+            Bitmap bitmap = BitmapFactory.decodeFile(imgPath);
+            head_iv.setImageBitmap(bitmap);
+        }
+        if(newName.isEmpty()) {
+            headName.setText(user_name);
+        }else{
+            headName.setText(newName);
+        }
         head_iv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -124,10 +209,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 intent1.putExtra("userId",user_id);
                 intent1.putExtra("password",user_pwd);
                 intent1.putExtra("name",user_name);
-                startActivity(intent1);
+                startActivityForResult(intent1,1);
+//                startActivity(intent1);
             }
         });
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        Log.d(TAG, "onActivityResult: 执行");
+        switch (requestCode){
+            case 1:
+                if(resultCode==RESULT_OK){
+                    newName=data.getStringExtra("newName");
+                    imgPath=data.getStringExtra("ImgPath");
+                    Log.d(TAG, "getNewData: "+imgPath+" "+newName);
+                    Bitmap bitmap = BitmapFactory.decodeFile(imgPath);
+                    head_iv.setImageBitmap(bitmap);
+                    headName.setText(newName);
+
+                }
+                break;
+            default:
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
     /**
      * 初始化用户目标，显示
      */
@@ -148,6 +255,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // 在使用 SDK 各组间之前初始化 context 信息，传入 ApplicationContext
+        SDKInitializer.initialize(getApplicationContext());
+        //自4.3.0起，百度地图SDK所有接口均支持百度坐标和国测局坐标，用此方法设置您使用的坐标类型.
+        //包括BD09LL和GCJ02两种坐标，默认是BD09LL坐标。
+        SDKInitializer.setCoordType(CoordType.BD09LL);
         super.onCreate(savedInstanceState);
         getData();
         setContentView(R.layout.activity_main);
@@ -156,6 +268,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initNavigation();
         initData();
         initTarget();
+        initMap();
         navigationView =(NavigationView)findViewById(R.id.nav_ceview);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
@@ -173,6 +286,206 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         return true;
                     }
                 });
+
+    }
+
+    private void initMap(){
+        startBD = BitmapDescriptorFactory.fromResource(R.drawable.ic_me_history_startpoint);
+        finishBD = BitmapDescriptorFactory.fromResource(R.drawable.ic_me_history_finishpoint);
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);// 获取传感器管理服务
+        // 地图初始化
+        mMapView = (MapView) findViewById(R.id.baidumapView);
+        mBaiduMap = mMapView.getMap();
+        // 开启定位图层
+        mBaiduMap.setMyLocationEnabled(true);
+        mBaiduMap.setMyLocationConfiguration(new MyLocationConfiguration(
+                com.baidu.mapapi.map.MyLocationConfiguration.LocationMode.FOLLOWING, true, null));
+        /**
+         * 添加地图缩放状态变化监听，当手动放大或缩小地图时，拿到缩放后的比例，然后获取到下次定位，
+         *  给地图重新设置缩放比例，否则地图会重新回到默认的mCurrentZoom缩放比例
+         */
+        mBaiduMap.setOnMapStatusChangeListener(new BaiduMap.OnMapStatusChangeListener() {
+            @Override
+            public void onMapStatusChangeStart(MapStatus mapStatus, int i) {
+
+            }
+
+            @Override
+            public void onMapStatusChangeStart(MapStatus arg0) {
+                // TODO Auto-generated method stub
+            }
+            @Override
+            public void onMapStatusChangeFinish(MapStatus arg0) {
+                mCurrentZoom = arg0.zoom;
+            }
+            @Override
+            public void onMapStatusChange(MapStatus arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
+
+        // 定位初始化
+        mLocClient = new LocationClient(this);
+        mLocClient.registerLocationListener(myListener);
+        locationOption = new LocationClientOption();
+        initLocationOption();
+    }
+
+    double lastX;
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        double x = sensorEvent.values[SensorManager.DATA_X];
+
+        if (Math.abs(x - lastX) > 1.0) {
+            mCurrentDirection = (int) x;
+
+            if (isFirstLoc) {
+                lastX = x;
+                return;
+            }
+
+            locData = new MyLocationData.Builder().accuracy(0)
+                    // 此处设置开发者获取到的方向信息，顺时针0-360
+                    .direction(mCurrentDirection).latitude(mCurrentLat).longitude(mCurrentLon).build();
+            mBaiduMap.setMyLocationData(locData);
+            Log.d("TAG", "onSensorChanged: "+locData);
+        }
+        lastX = x;
+
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
+    }
+
+    /**
+     * 定位SDK监听函数
+     */
+    public class MyLocationListenner implements BDLocationListener {
+        @Override
+        public void onReceiveLocation(final BDLocation location) {
+            if (location == null || mMapView == null) {
+                return;
+            }
+            if (isFirstLoc) {//首次定位
+                LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
+                if(ll == null){
+                    return;
+                }
+                isFirstLoc = false;
+                points.add(ll);//加入集合
+                last = ll;
+                Log.d(TAG, "onReceiveLocation: ");
+                //显示当前定位点，缩放地图
+                locateAndZoom(location, ll);
+                //标记起点图层位置
+                MarkerOptions oStart = new MarkerOptions();// 地图标记覆盖物参数配置类
+                oStart.position(points.get(0));// 覆盖物位置点，第一个点为起点
+                oStart.icon(startBD);// 设置覆盖物图片
+                mBaiduMap.addOverlay(oStart); // 在地图上添加此图层
+//                    progressBarRl.setVisibility(View.GONE);
+                return;//画轨迹最少得2个点，首地定位到这里就可以返回了
+            }
+            //从第二个点开始
+            LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
+            //sdk回调gps位置的频率是1秒1个，位置点太近动态画在图上不是很明显，可以设置点之间距离大于为5米才添加到集合中
+            if (DistanceUtil.getDistance(last, ll) < 10) {
+                return;
+            }
+            points.add(ll);//如果要运动完成后画整个轨迹，位置点都在这个集合中
+            last = ll;
+            //显示当前定位点，缩放地图
+            locateAndZoom(location, ll);
+            //清除上一次轨迹，避免重叠绘画
+            mMapView.getMap().clear();
+            //起始点图层也会被清除，重新绘画
+            MarkerOptions oStart = new MarkerOptions();
+            oStart.position(points.get(0));
+            oStart.icon(startBD);
+            mBaiduMap.addOverlay(oStart);
+            //将points集合中的点绘制轨迹线条图层，显示在地图上
+            OverlayOptions ooPolyline = new PolylineOptions().width(13).color(0xAAFF0000).points(points);
+            mPolyline = (Polyline) mBaiduMap.addOverlay(ooPolyline);
+        }
+//        }
+    }
+
+    private void locateAndZoom(final BDLocation location, LatLng ll) {
+        mCurrentLat = location.getLatitude();
+        mCurrentLon = location.getLongitude();
+        locData = new MyLocationData.Builder().accuracy(0)
+                // 此处设置开发者获取到的方向信息，顺时针0-360
+                .direction(mCurrentDirection).latitude(location.getLatitude())
+                .longitude(location.getLongitude()).build();
+        mBaiduMap.setMyLocationData(locData);
+        MapStatusUpdate update= MapStatusUpdateFactory.newLatLng(ll);
+        mBaiduMap.animateMapStatus(update);
+        update=MapStatusUpdateFactory.zoomTo(19f);
+        mBaiduMap.animateMapStatus(update);
+    }
+
+    public void startMap(){
+        mLocClient.setLocOption(locationOption);
+        mLocClient.start();
+        Log.d(TAG, "onClick:  mLocClient.start()");
+    }
+
+    public void stopMap(){
+        if (mLocClient != null && mLocClient.isStarted()) {
+            mLocClient.stop();
+            if (isFirstLoc) {
+                points.clear();
+                last = new LatLng(0, 0);
+                return;
+            }
+            MarkerOptions oFinish = new MarkerOptions();// 地图标记覆盖物参数配置类
+            oFinish.position(points.get(points.size() - 1));
+            oFinish.icon(finishBD);// 设置覆盖物图片
+            mBaiduMap.addOverlay(oFinish); // 在地图上添加此图层
+            //复位
+            points.clear();
+            last = new LatLng(0, 0);
+            isFirstLoc = true;
+        }
+    }
+    /**
+     * 初始化定位参数配置
+     */
+    private void initLocationOption() {
+//可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
+//        locationOption.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);
+        locationOption.setLocationMode(LocationClientOption.LocationMode.Device_Sensors);
+//可选，默认gcj02，设置返回的定位结果坐标系，如果配合百度地图使用，建议设置为bd09ll;
+        locationOption.setCoorType("bd09ll");
+//可选，默认0，即仅定位一次，设置发起连续定位请求的间隔需要大于等于1000ms才是有效的
+        locationOption.setScanSpan(5000);
+//可选，设置是否需要地址信息，默认不需要
+        locationOption.setIsNeedAddress(true);
+//可选，设置是否需要地址描述
+        locationOption.setIsNeedLocationDescribe(true);
+//可选，设置是否需要设备方向结果
+        locationOption.setNeedDeviceDirect(false);
+//可选，默认false，设置是否当gps有效时按照1S1次频率输出GPS结果
+        locationOption.setLocationNotify(true);
+//可选，默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop的时候杀死这个进程，默认不杀死
+        locationOption.setIgnoreKillProcess(true);
+//可选，默认false，设置是否需要位置语义化结果，可以在BDLocation.getLocationDescribe里得到，结果类似于“在北京天安门附近”
+        locationOption.setIsNeedLocationDescribe(true);
+//可选，默认false，设置是否需要POI结果，可以在BDLocation.getPoiList里得到
+        locationOption.setIsNeedLocationPoiList(true);
+//可选，默认false，设置是否收集CRASH信息，默认收集
+        locationOption.SetIgnoreCacheException(false);
+//可选，默认false，设置是否开启Gps定位
+        locationOption.setOpenGps(true);
+//可选，默认false，设置定位时是否需要海拔信息，默认不需要，除基础定位版本都可用
+        locationOption.setIsNeedAltitude(false);
+//设置打开自动回调位置模式，该开关打开后，期间只要定位SDK检测到位置变化就会主动回调给开发者，该模式下开发者无需再关心定位间隔是多少，定位SDK本身发现位置变化就会及时回调给开发者
+        locationOption.setOpenAutoNotifyMode();
+//设置打开自动回调位置模式，该开关打开后，期间只要定位SDK检测到位置变化就会主动回调给开发者
+        locationOption.setOpenAutoNotifyMode(3000,1, LocationClientOption.LOC_SENSITIVITY_HIGHT);
+//需将配置好的LocationClientOption对象，通过setLocOption方法传递给LocationClient对象使用
     }
 
     private void initData(){
@@ -237,13 +550,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     };
 
-    //侧边栏菜单的点击事件
+    //toolbar点击事件
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
             //HomeAsUp按钮默认值都是android.R.id.home
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
+
                 break;
 
         }
@@ -251,40 +565,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onPause() {
+    protected void onPause() {
+        mMapView.onPause();
         super.onPause();
     }
 
     @Override
-    public void onResume() {
+    protected void onResume() {
+        mMapView.onResume();
         super.onResume();
+        // 为系统的方向传感器注册监听器
+        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
+                SensorManager.SENSOR_DELAY_UI);
+    }
+
+    @Override
+    protected void onStop() {
+        // 取消注册传感器监听
+        mSensorManager.unregisterListener(this);
+        super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         if (isBind) {
             this.unbindService(conn);
         }
+        // 退出时销毁定位
+        mLocClient.unRegisterLocationListener(myListener);
+        if (mLocClient != null && mLocClient.isStarted()) {
+            mLocClient.stop();
+        }
+        // 关闭定位图层
+        mBaiduMap.setMyLocationEnabled(false);
+        mMapView.getMap().clear();
+        mMapView.onDestroy();
+        mMapView = null;
+        startBD.recycle();
+        finishBD.recycle();
+        super.onDestroy();
     }
-
+    //开始和停止运动
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.bt_start_sport:
                 setupService();
+                chronometer.setBase(SystemClock.elapsedRealtime());
                 chronometer.start();
+                startMap();
                 Log.d(TAG, "onClick: 开始计步");
                 break;
             case R.id.bt_stop_sport:
                 stopService();
                 chronometer.stop();
+                stopMap();
                 Log.d(TAG, "onClick: 停止计步");
-                break;
-            case R.id.img_map:
-//                startActivity(new Intent(MainActivity.this,MapTrackActivity.class));
-                startActivity(new Intent(MainActivity.this,DynamicDemo.class));
-
                 break;
             default:
         }
@@ -341,4 +677,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return target.myTarget;
         }
     }
+
+
 }

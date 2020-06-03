@@ -14,9 +14,11 @@ public class AnalyseActivity extends AppCompatActivity implements HistoryChartVi
     private final static int WEEK_MODE = 1;
     private HistoryChartView mHistoryChartView;
     private int mode = WEEK_MODE;
-    private String mStrWeekRoomData = "2445,3009,1980,2677,2409,2845,3102";
-    private String mStrWeekSettingData = "26,26,26,26,26,26,26";
-    private String mStrWeekPowerTimeData = "60,70,80,80,90,95,100";
+    private String mStrWeekRoomData = "2445,3009,2980,2677,2409,2845,3102";
+    private String mStrWeekSettingData = "2800,2800,2800,2800,2800,2800,2800";
+//    private String mStrWeekPowerTimeData = "60,70,80,80,90,95,100";
+//private String mStrWeekPowerTimeData = "93,100,99,89,80,96,103";
+private String mStrWeekPowerTimeData = "57,65,64,54,51,62,67";
     /**
      * 加载toolbar
      */

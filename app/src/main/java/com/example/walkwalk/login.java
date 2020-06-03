@@ -1,8 +1,12 @@
 package com.example.walkwalk;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -56,6 +60,7 @@ public class login extends AppCompatActivity implements View.OnClickListener{
                     switch (ans){
                         case 0:
                             now = "登录成功！";
+                            No();
                             String userName=user.myself.getName();
                             String userPwd=user.myself.getPassword();
                             String userSex=user.myself.getSex();
@@ -137,5 +142,24 @@ public class login extends AppCompatActivity implements View.OnClickListener{
         public int getAns(){
             return ans;
         }
+    }
+    private void No(){
+        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        Notification notification = new NotificationCompat.Builder(this)
+                .setContentTitle("步步")
+                .setContentText("运动是一切生命的源泉。 ——达·芬奇")
+                .setWhen(System.currentTimeMillis())
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
+//                        .setContentIntent(pi)
+                //        .setSound(Uri.fromFile(new File("/system/media/audio/ringtones/Luna.ogg")))
+                //        .setVibrate(new long[]{0, 1000, 1000, 1000})
+                //        .setLights(Color.GREEN, 1000, 1000)
+                //.setDefaults(NotificationCompat.DEFAULT_ALL)
+                //        .setStyle(new NotificationCompat.BigTextStyle().bigText("Learn how to build notifications, send and sync data, and use voice actions. Get the official Android IDE and developer tools to build apps for Android."))
+//                        .setStyle(new NotificationCompat.BigPictureStyle().bigPicture(BitmapFactory.decodeResource(getResources(), R.drawable.logo)))
+                        .setPriority(NotificationCompat.PRIORITY_MAX)
+                .build();
+        manager.notify(1, notification);
     }
 }

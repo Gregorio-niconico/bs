@@ -33,10 +33,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".DynamicDemo"
-            android:label=""
-            android:theme="@style/AppTheme.NoActionBarE">
-        </activity>
+
+        <activity
+            android:name=".DynamicDemo"
+            android:label="步行轨迹"
+            android:theme="@style/AppTheme.NoActionBarE"></activity>
         <activity
             android:name=".MapTrackActivity"
             android:label=""

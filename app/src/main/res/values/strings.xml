@@ -4,7 +4,7 @@
     <string name="title_sport">运动</string>
     <string name="title_analyze">分析</string>
     <string name="title_myinfo">我的</string>
-    <string name="text_v">步/分钟</string>
+    <string name="text_v">步/分</string>
     <string name="start_sport">开始</string>
     <string name="stop_sport">停止</string>
     <string name="history_y1_unit">(步)</string>

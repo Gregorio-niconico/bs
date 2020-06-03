@@ -41,7 +41,7 @@ public class HistoryChartView extends View {
 
     private float MarginRight = 100;
 
-    private float mYLabelSize = 50;
+    private float mYLabelSize = 40;
 
     private float mXlabelSize = 35;
 

@@ -22,7 +22,7 @@ public class StepArcView extends View {
     /**
      * 圆弧的宽度
      */
-    private float borderWidth = dipToPx(14);
+    private float borderWidth = dipToPx(10);
     /**
      * 画步数的数值的字体大小
      */
